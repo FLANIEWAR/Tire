@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Шиномонтаж — Заявка клиента</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Быстро. Прозрачно. Без звонков.</p>
+          <h1 class="hero__title">Онлайн‑заявка на шиномонтаж</h1>
+          <p class="hero__subtitle">
+            Клиент оставляет модель авто, госномер и список работ — вы сразу видите все детали.
+          </p>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card">
+          <h2 class="card__title">Данные клиента</h2>
+          <form id="order-form" class="form" autocomplete="off">
+            <label class="field">
+              <span class="field__label">Модель автомобиля</span>
+              <input
+                id="car-model"
+                name="carModel"
+                type="text"
+                placeholder="Например: Toyota Corolla 2018"
+                required
+              />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Госномер</span>
+              <input
+                id="plate-number"
+                name="plateNumber"
+                type="text"
+                placeholder="А123ВС 96"
+                required
+              />
+            </label>
+
+            <fieldset class="field field--actions">
+              <legend class="field__label">Что нужно сделать</legend>
+              <div class="checks">
+                <label class="check">
+                  <input type="checkbox" name="actions" value="Сезонная замена шин" />
+                  <span>Сезонная замена шин</span>
+                </label>
+                <label class="check">
+                  <input type="checkbox" name="actions" value="Балансировка" />
+                  <span>Балансировка</span>
+                </label>
+                <label class="check">
+                  <input type="checkbox" name="actions" value="Ремонт прокола" />
+                  <span>Ремонт прокола</span>
+                </label>
+                <label class="check">
+                  <input type="checkbox" name="actions" value="Проверка давления" />
+                  <span>Проверка давления</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <label class="field">
+              <span class="field__label">Другое / комментарий</span>
+              <textarea
+                id="note"
+                name="note"
+                rows="4"
+                placeholder="Например: заменить ниппели, проверить диски"
+              ></textarea>
+            </label>
+
+            <div class="form__actions">
+              <button type="submit" class="btn btn--primary">Отправить заявку</button>
+              <button type="button" id="reset-btn" class="btn btn--ghost">Очистить</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="card card--preview" aria-live="polite">
+          <h2 class="card__title">Предварительный итог</h2>
+          <div id="preview" class="preview">
+            <p class="preview__empty">Заполните форму слева, чтобы увидеть итог.</p>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
