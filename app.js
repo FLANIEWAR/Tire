@@ -87,35 +87,29 @@ const renderSlots = (slots, message) => {
   });
 };
 
-const loadSlots = async (dateValue) => {
+const SLOT_START_MINUTES = 9 * 60;
+const SLOT_END_MINUTES = 21 * 60;
+const SLOT_STEP_MINUTES = 30;
+
+const buildSlots = () => {
+  const slots = [];
+  for (let minutes = SLOT_START_MINUTES; minutes < SLOT_END_MINUTES; minutes += SLOT_STEP_MINUTES) {
+    const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
+    const mins = String(minutes % 60).padStart(2, "0");
+    slots.push(`${hours}:${mins}`);
+  }
+  return slots;
+};
+
+const loadSlots = (dateValue) => {
   if (!dateValue) {
     renderSlots([], "Сначала выберите дату");
     return;
   }
 
-  slotTimeSelect.disabled = true;
-  renderSlots([], "Загружаем слоты...");
-
-  try {
-    const response = await fetch(`/api/slots?date=${dateValue}`);
-    if (!response.ok) {
-      throw new Error("Не удалось получить слоты.");
-    }
-    const data = await response.json();
-    if (data.slots.length === 0) {
-      renderSlots([], "Нет свободных слотов");
-      setStatus("На выбранную дату нет свободных слотов.", "warning");
-    } else {
-      renderSlots(data.slots, "Выберите время");
-      setStatus("");
-    }
-  } catch (error) {
-    renderSlots([], "Ошибка загрузки");
-    setStatus("Не удалось загрузить доступные слоты. Попробуйте позже.", "error");
-  } finally {
-    slotTimeSelect.disabled = false;
-    buildPreview();
-  }
+  renderSlots(buildSlots(), "Выберите время");
+  setStatus("");
+  buildPreview();
 };
 
 const handleSubmit = async (event) => {
@@ -145,12 +139,6 @@ const handleSubmit = async (event) => {
       body: JSON.stringify(payload),
     });
 
-    if (response.status === 409) {
-      setStatus("Это время уже занято. Пожалуйста, выберите другое.", "warning");
-      await loadSlots(payload.slotDate);
-      return;
-    }
-
     if (!response.ok) {
       throw new Error("Ошибка отправки");
     }
@@ -159,7 +147,7 @@ const handleSubmit = async (event) => {
     const selectedDate = slotDateInput.value;
     form.reset();
     slotDateInput.value = selectedDate;
-    await loadSlots(selectedDate);
+    loadSlots(selectedDate);
     buildPreview();
   } catch (error) {
     setStatus("Не удалось отправить заявку. Попробуйте еще раз.", "error");
