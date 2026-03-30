@@ -13,8 +13,9 @@
           <p class="hero__eyebrow">Быстро. Прозрачно. Без звонков.</p>
           <h1 class="hero__title">Онлайн‑заявка на шиномонтаж</h1>
           <p class="hero__subtitle">
-            Клиент оставляет модель авто, госномер и список работ — вы сразу видите все детали.
+            Клиент оставляет модель авто, госномер, параметры шин и выбирает удобное время — мастер сразу видит все детали.
           </p>
+          <a class="hero__link" href="master.html">Перейти к заказам мастера</a>
         </div>
       </header>
 
@@ -44,6 +45,36 @@
               />
             </label>
 
+            <div class="field field--inline">
+              <label class="field">
+                <span class="field__label">Радиус</span>
+                <input
+                  id="radius"
+                  name="radius"
+                  type="number"
+                  min="12"
+                  max="24"
+                  step="1"
+                  placeholder="16"
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="field__label">Кол-во колес</span>
+                <input
+                  id="wheels-count"
+                  name="wheelsCount"
+                  type="number"
+                  min="1"
+                  max="8"
+                  step="1"
+                  placeholder="4"
+                  required
+                />
+              </label>
+            </div>
+
             <fieldset class="field field--actions">
               <legend class="field__label">Что нужно сделать</legend>
               <div class="checks">
@@ -67,6 +98,18 @@
             </fieldset>
 
             <label class="field">
+              <span class="field__label">Выберите дату</span>
+              <input id="slot-date" name="slotDate" type="date" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Выберите время (каждые 30 минут)</span>
+              <select id="slot-time" name="slotTime" required>
+                <option value="">Сначала выберите дату</option>
+              </select>
+            </label>
+
+            <label class="field">
               <span class="field__label">Другое / комментарий</span>
               <textarea
                 id="note"
@@ -80,6 +123,8 @@
               <button type="submit" class="btn btn--primary">Отправить заявку</button>
               <button type="button" id="reset-btn" class="btn btn--ghost">Очистить</button>
             </div>
+
+            <p id="form-status" class="status" role="status" aria-live="polite"></p>
           </form>
         </section>
 

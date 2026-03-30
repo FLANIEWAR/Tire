@@ -71,6 +71,24 @@ body {
   line-height: 1.5;
 }
 
+.hero__link {
+  display: inline-flex;
+  margin-top: 1.25rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5f2ea;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hero__link:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
 .grid {
   display: grid;
   gap: 2rem;
@@ -94,6 +112,14 @@ body {
   font-size: 1.4rem;
 }
 
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .form {
   display: grid;
   gap: 1.25rem;
@@ -105,12 +131,19 @@ body {
   font-size: 0.95rem;
 }
 
+.field--inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
 .field__label {
   font-weight: 600;
 }
 
 input,
-textarea {
+textarea,
+select {
   font: inherit;
   padding: 0.75rem 0.85rem;
   border-radius: 12px;
@@ -121,7 +154,8 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(203, 92, 31, 0.2);
@@ -210,6 +244,55 @@ textarea:focus {
   color: var(--text);
 }
 
+.status {
+  min-height: 1.2rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.status--success {
+  color: #2e6f4f;
+  font-weight: 600;
+}
+
+.status--error {
+  color: #a3342a;
+  font-weight: 600;
+}
+
+.status--warning {
+  color: #8b5a14;
+  font-weight: 600;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.orders {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.orders th,
+.orders td {
+  text-align: left;
+  padding: 0.75rem 0.6rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.orders th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.orders tr:hover td {
+  background: rgba(255, 255, 255, 0.5);
+}
+
 @media (max-width: 720px) {
   .hero {
     padding: 2rem 1.5rem;
@@ -217,5 +300,10 @@ textarea:focus {
 
   .card {
     padding: 1.5rem;
+  }
+
+  .card__header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

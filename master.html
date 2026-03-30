@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Шиномонтаж — Заказы мастера</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Панель мастера</p>
+          <h1 class="hero__title">Текущие заказы</h1>
+          <p class="hero__subtitle">
+            Здесь отображаются все заявки, сохраненные в базе данных. Обновляйте список, чтобы видеть новые записи.
+          </p>
+          <a class="hero__link" href="index.html">Вернуться к форме клиента</a>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Список заявок</h2>
+          <button id="refresh-btn" class="btn btn--ghost">Обновить</button>
+        </div>
+
+        <p id="orders-status" class="status" role="status" aria-live="polite"></p>
+        <div class="table-wrap">
+          <table class="orders">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Статус</th>
+                <th>Авто</th>
+                <th>Госномер</th>
+                <th>Радиус</th>
+                <th>Кол-во колес</th>
+                <th>Работы</th>
+                <th>Комментарий</th>
+                <th>Создано</th>
+              </tr>
+            </thead>
+            <tbody id="orders-body"></tbody>
+          </table>
+        </div>
+        <p id="orders-empty" class="preview__empty">Пока нет заявок.</p>
+      </section>
+    </div>
+
+    <script src="master.js"></script>
+  </body>
+</html>
