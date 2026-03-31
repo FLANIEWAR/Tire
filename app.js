@@ -8,6 +8,7 @@ const slotTimeSelect = document.getElementById("slot-time");
 const inputIds = [
   "car-model",
   "plate-number",
+  "phone",
   "radius",
   "wheels-count",
   "note",
@@ -32,6 +33,7 @@ const readActions = () =>
 const buildPreview = () => {
   const carModel = document.getElementById("car-model").value.trim();
   const plateNumber = document.getElementById("plate-number").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const radius = document.getElementById("radius").value.trim();
   const wheelsCount = document.getElementById("wheels-count").value.trim();
   const note = document.getElementById("note").value.trim();
@@ -40,7 +42,17 @@ const buildPreview = () => {
 
   const actions = readActions();
 
-  if (!carModel && !plateNumber && !radius && !wheelsCount && actions.length === 0 && !note && !slotDate && !slotTime) {
+  if (
+    !carModel &&
+    !plateNumber &&
+    !phone &&
+    !radius &&
+    !wheelsCount &&
+    actions.length === 0 &&
+    !note &&
+    !slotDate &&
+    !slotTime
+  ) {
     preview.innerHTML = "<p class='preview__empty'>Заполните форму слева, чтобы увидеть итог.</p>";
     return;
   }
@@ -53,6 +65,7 @@ const buildPreview = () => {
   preview.innerHTML = `
     <p class="preview__item">Модель: ${carModel || "—"}</p>
     <p class="preview__item">Госномер: ${plateNumber || "—"}</p>
+    <p class="preview__item">Телефон: ${phone || "—"}</p>
     <p class="preview__item">Радиус: ${radius || "—"}</p>
     <p class="preview__item">Кол-во колес: ${wheelsCount || "—"}</p>
     <p class="preview__item">Дата: ${slotDate || "—"}</p>
@@ -119,6 +132,7 @@ const handleSubmit = async (event) => {
   const payload = {
     carModel: document.getElementById("car-model").value.trim(),
     plateNumber: document.getElementById("plate-number").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
     radius: Number(document.getElementById("radius").value),
     wheelsCount: Number(document.getElementById("wheels-count").value),
     actions: readActions(),

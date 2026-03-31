@@ -119,6 +119,7 @@ const renderOrders = (orders) => {
       <td class="order-status-label">${statusLabel(order.status)}</td>
       <td>${order.carModel}</td>
       <td>${order.plateNumber}</td>
+      <td>${order.phone || "—"}</td>
       <td>${order.radius}</td>
       <td>${order.wheelsCount}</td>
       <td>${order.actions.join(", ") || "—"}</td>
