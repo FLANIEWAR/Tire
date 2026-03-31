@@ -1,4 +1,4 @@
-const form = document.getElementById("order-form");
+﻿const form = document.getElementById("order-form");
 const preview = document.getElementById("preview");
 const resetBtn = document.getElementById("reset-btn");
 const statusBox = document.getElementById("form-status");
@@ -140,7 +140,8 @@ const handleSubmit = async (event) => {
     });
 
     if (!response.ok) {
-      throw new Error("Ошибка отправки");
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `Ошибка отправки: ${response.status}`);
     }
 
     setStatus("Заявка отправлена. Мы закрепили выбранное время.", "success");
@@ -150,7 +151,8 @@ const handleSubmit = async (event) => {
     loadSlots(selectedDate);
     buildPreview();
   } catch (error) {
-    setStatus("Не удалось отправить заявку. Попробуйте еще раз.", "error");
+    setStatus(error.message || "Не удалось отправить заявку. Попробуйте еще раз.", "error");
+    console.error("Order submit failed", error);
   }
 };
 

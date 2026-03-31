@@ -1,7 +1,6 @@
-const express = require("express");
+﻿const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const Database = require("better-sqlite3");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,68 +8,31 @@ const PORT = process.env.PORT || 3000;
 const dataDir = path.join(__dirname, "data");
 fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, "tire.db"));
+const ordersFile = path.join(dataDir, "orders.json");
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    car_model TEXT NOT NULL,
-    plate_number TEXT NOT NULL,
-    radius INTEGER NOT NULL,
-    wheels_count INTEGER NOT NULL,
-    actions TEXT NOT NULL,
-    note TEXT,
-    slot_date TEXT NOT NULL,
-    slot_time TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'new',
-    created_at TEXT NOT NULL,
-    UNIQUE(slot_date, slot_time)
-  );
-`);
+const loadOrders = () => {
+  if (!fs.existsSync(ordersFile)) {
+    return [];
+  }
 
-try {
-  db.exec(`ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'new';`);
-} catch (error) {
-  // column exists
-}
+  try {
+    const raw = fs.readFileSync(ordersFile, "utf8");
+    const data = JSON.parse(raw);
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.orders)) {
+      return data.orders;
+    }
+    return [];
+  } catch (error) {
+    return [];
+  }
+};
 
-const insertOrder = db.prepare(`
-  INSERT INTO orders (
-    car_model,
-    plate_number,
-    radius,
-    wheels_count,
-    actions,
-    note,
-    slot_date,
-    slot_time,
-    status,
-    created_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-`);
-
-const listOrders = db.prepare(`
-  SELECT
-    id,
-    car_model,
-    plate_number,
-    radius,
-    wheels_count,
-    actions,
-    note,
-    slot_date,
-    slot_time,
-    status,
-    created_at
-  FROM orders
-  ORDER BY slot_date ASC, slot_time ASC;
-`);
-
-const bookedSlots = db.prepare(`
-  SELECT slot_time
-  FROM orders
-  WHERE slot_date = ?;
-`);
+const saveOrders = (orders) => {
+  fs.writeFileSync(ordersFile, JSON.stringify({ orders }, null, 2));
+};
 
 const SLOT_START_MINUTES = 9 * 60;
 const SLOT_END_MINUTES = 21 * 60;
@@ -97,34 +59,26 @@ app.get("/api/slots", (req, res) => {
     return res.status(400).json({ error: "Дата не указана." });
   }
 
-  const booked = new Set(bookedSlots.all(date).map((row) => row.slot_time));
+  const orders = loadOrders();
+  const booked = new Set(
+    orders.filter((order) => order.slotDate === date).map((order) => order.slotTime)
+  );
   const available = buildSlots().filter((slot) => !booked.has(slot));
   return res.json({ date, slots: available });
 });
 
 app.get("/api/orders", (req, res) => {
-  const orders = listOrders.all().map((row) => ({
-    id: row.id,
-    carModel: row.car_model,
-    plateNumber: row.plate_number,
-    radius: row.radius,
-    wheelsCount: row.wheels_count,
-    actions: JSON.parse(row.actions || "[]"),
-    note: row.note || "",
-    slotDate: row.slot_date,
-    slotTime: row.slot_time,
-    status: row.status || "new",
-    createdAt: row.created_at,
-  }));
+  const orders = loadOrders()
+    .slice()
+    .sort((a, b) => {
+      if (a.slotDate === b.slotDate) {
+        return String(a.slotTime).localeCompare(String(b.slotTime));
+      }
+      return String(a.slotDate).localeCompare(String(b.slotDate));
+    });
 
   res.json({ orders });
 });
-
-const updateOrder = db.prepare(`
-  UPDATE orders
-  SET slot_date = ?, slot_time = ?, status = ?
-  WHERE id = ?;
-`);
 
 app.post("/api/orders", (req, res) => {
   const {
@@ -147,25 +101,33 @@ app.post("/api/orders", (req, res) => {
     return res.status(400).json({ error: "Недопустимое время." });
   }
 
-  try {
-    insertOrder.run(
-      carModel.trim(),
-      plateNumber.trim(),
-      Number(radius),
-      Number(wheelsCount),
-      JSON.stringify(actions),
-      note.trim(),
-      slotDate,
-      slotTime,
-      status,
-      new Date().toISOString()
-    );
-  } catch (error) {
-    if (String(error).includes("UNIQUE")) {
-      return res.status(409).json({ error: "Время уже занято." });
-    }
-    return res.status(500).json({ error: "Не удалось сохранить заявку." });
+  const orders = loadOrders();
+  const isTaken = orders.some(
+    (order) => order.slotDate === slotDate && order.slotTime === slotTime
+  );
+
+  if (isTaken) {
+    return res.status(409).json({ error: "Время уже занято." });
   }
+
+  const nextId = orders.reduce((maxId, order) => Math.max(maxId, Number(order.id) || 0), 0) + 1;
+
+  const order = {
+    id: nextId,
+    carModel: carModel.trim(),
+    plateNumber: plateNumber.trim(),
+    radius: Number(radius),
+    wheelsCount: Number(wheelsCount),
+    actions: Array.isArray(actions) ? actions : [],
+    note: note.trim(),
+    slotDate,
+    slotTime,
+    status,
+    createdAt: new Date().toISOString(),
+  };
+
+  orders.push(order);
+  saveOrders(orders);
 
   return res.status(201).json({ ok: true });
 });
@@ -175,24 +137,36 @@ app.put("/api/orders/:id", (req, res) => {
   const { slotDate, slotTime, status = "new" } = req.body || {};
 
   if (!id || !slotDate || !slotTime) {
-    return res.status(400).json({ error: "Р—Р°РїРѕР»РЅРёС‚Рµ РґР°С‚Сѓ Рё РІСЂРµРјСЏ." });
+    return res.status(400).json({ error: "Заполните дату и время." });
   }
 
   if (!allowedSlots.has(slotTime)) {
-    return res.status(400).json({ error: "РќРµРґРѕРїСѓСЃС‚РёРјРѕРµ РІСЂРµРјСЏ." });
+    return res.status(400).json({ error: "Недопустимое время." });
   }
 
-  try {
-    const info = updateOrder.run(slotDate, slotTime, status, id);
-    if (info.changes === 0) {
-      return res.status(404).json({ error: "Р—Р°СЏРІРєР° РЅРµ РЅР°Р№РґРµРЅР°." });
-    }
-  } catch (error) {
-    if (String(error).includes("UNIQUE")) {
-      return res.status(409).json({ error: "Р’СЂРµРјСЏ СѓР¶Рµ Р·Р°РЅСЏС‚Рѕ." });
-    }
-    return res.status(500).json({ error: "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ Р·Р°СЏРІРєСѓ." });
+  const orders = loadOrders();
+  const orderIndex = orders.findIndex((order) => Number(order.id) === id);
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: "Заявка не найдена." });
   }
+
+  const isTaken = orders.some(
+    (order) => Number(order.id) !== id && order.slotDate === slotDate && order.slotTime === slotTime
+  );
+
+  if (isTaken) {
+    return res.status(409).json({ error: "Время уже занято." });
+  }
+
+  orders[orderIndex] = {
+    ...orders[orderIndex],
+    slotDate,
+    slotTime,
+    status,
+  };
+
+  saveOrders(orders);
 
   return res.json({ ok: true });
 });
