@@ -131,6 +131,7 @@ const renderOrders = (orders) => {
           <select class="order-time"></select>
           <select class="order-status">${statusOptions(order.status)}</select>
           <button class="btn btn--ghost btn--small order-save">Сохранить</button>
+          <button class="btn btn--ghost btn--small order-delete">Удалить</button>
         </div>
         <p class="order-message" role="status" aria-live="polite"></p>
       </td>
@@ -141,6 +142,7 @@ const renderOrders = (orders) => {
     const timeSelect = row.querySelector(".order-time");
     const statusSelect = row.querySelector(".order-status");
     const saveBtn = row.querySelector(".order-save");
+    const deleteBtn = row.querySelector(".order-delete");
     const messageBox = row.querySelector(".order-message");
     const slotDateCell = row.querySelector(".order-slot-date");
     const slotTimeCell = row.querySelector(".order-slot-time");
@@ -194,6 +196,32 @@ const renderOrders = (orders) => {
         order.status = status;
       } catch (error) {
         messageBox.textContent = error.message || "Ошибка обновления";
+        messageBox.className = "order-message order-message--error";
+      }
+    });
+
+    deleteBtn.addEventListener("click", async () => {
+      const confirmed = window.confirm("Удалить заявку без возможности восстановления?");
+      if (!confirmed) {
+        return;
+      }
+
+      messageBox.textContent = "Удаляем...";
+      messageBox.className = "order-message";
+
+      try {
+        const response = await fetch(`/api/orders/${order.id}`, { method: "DELETE" });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || "Ошибка удаления");
+        }
+
+        row.remove();
+        if (!ordersBody.children.length) {
+          ordersEmpty.style.display = "block";
+        }
+      } catch (error) {
+        messageBox.textContent = error.message || "Ошибка удаления";
         messageBox.className = "order-message order-message--error";
       }
     });
