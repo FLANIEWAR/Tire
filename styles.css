@@ -293,6 +293,40 @@ select:focus {
   background: rgba(255, 255, 255, 0.5);
 }
 
+.order-edit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.order-edit input,
+.order-edit select {
+  padding: 0.45rem 0.55rem;
+  border-radius: 10px;
+}
+
+.btn--small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.order-message {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.order-message--success {
+  color: #2e6f4f;
+  font-weight: 600;
+}
+
+.order-message--error {
+  color: #a3342a;
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   .hero {
     padding: 2rem 1.5rem;

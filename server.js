@@ -51,6 +51,7 @@ const insertOrder = db.prepare(`
 
 const listOrders = db.prepare(`
   SELECT
+    id,
     car_model,
     plate_number,
     radius,
@@ -103,6 +104,7 @@ app.get("/api/slots", (req, res) => {
 
 app.get("/api/orders", (req, res) => {
   const orders = listOrders.all().map((row) => ({
+    id: row.id,
     carModel: row.car_model,
     plateNumber: row.plate_number,
     radius: row.radius,
@@ -117,6 +119,12 @@ app.get("/api/orders", (req, res) => {
 
   res.json({ orders });
 });
+
+const updateOrder = db.prepare(`
+  UPDATE orders
+  SET slot_date = ?, slot_time = ?, status = ?
+  WHERE id = ?;
+`);
 
 app.post("/api/orders", (req, res) => {
   const {
@@ -160,6 +168,33 @@ app.post("/api/orders", (req, res) => {
   }
 
   return res.status(201).json({ ok: true });
+});
+
+app.put("/api/orders/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const { slotDate, slotTime, status = "new" } = req.body || {};
+
+  if (!id || !slotDate || !slotTime) {
+    return res.status(400).json({ error: "Р—Р°РїРѕР»РЅРёС‚Рµ РґР°С‚Сѓ Рё РІСЂРµРјСЏ." });
+  }
+
+  if (!allowedSlots.has(slotTime)) {
+    return res.status(400).json({ error: "РќРµРґРѕРїСѓСЃС‚РёРјРѕРµ РІСЂРµРјСЏ." });
+  }
+
+  try {
+    const info = updateOrder.run(slotDate, slotTime, status, id);
+    if (info.changes === 0) {
+      return res.status(404).json({ error: "Р—Р°СЏРІРєР° РЅРµ РЅР°Р№РґРµРЅР°." });
+    }
+  } catch (error) {
+    if (String(error).includes("UNIQUE")) {
+      return res.status(409).json({ error: "Р’СЂРµРјСЏ СѓР¶Рµ Р·Р°РЅСЏС‚Рѕ." });
+    }
+    return res.status(500).json({ error: "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅРѕРІРёС‚СЊ Р·Р°СЏРІРєСѓ." });
+  }
+
+  return res.json({ ok: true });
 });
 
 app.listen(PORT, () => {
