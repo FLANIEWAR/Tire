@@ -4,6 +4,7 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 const dataDir = path.join(__dirname, "data");
 fs.mkdirSync(dataDir, { recursive: true });
@@ -171,6 +172,6 @@ app.put("/api/orders/:id", (req, res) => {
   return res.json({ ok: true });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server started on http://${HOST}:${PORT}`);
 });
